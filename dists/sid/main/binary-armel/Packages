@@ -1,0 +1,29 @@
+Package: skybian
+Version: 1.1.0-3
+Architecture: armel
+Depends: 
+Maintainer: Skycoin
+Priority: optional
+Section: web
+Filename: pool/main/s/skybian/skybian_1.1.0-3_armel.deb
+Size: 6256
+SHA256: a4f616b5c79dbd139e838089087346d9d3adca60255d61c5a942b1ed0852469b
+SHA1: 27c6853b8cac93b1dddc5e044108d1fc65bd6350
+MD5sum: 8f77f62c0e777ba8dff2f34587a3786c
+Description: Packaged modifications to the skybian image, including repo configuration - debian package
+
+Package: skywire-bin
+Version: 1.2.1-1
+Architecture: armel
+Depends: 
+Provides: skywire
+Maintainer: skycoin
+Priority: optional
+Section: web
+Filename: pool/main/s/skywire-bin/skywire-bin_1.2.1-1_armel.deb
+Size: 9216336
+SHA256: 7e0e6e020d98f714e847836375efa9c6680d184b5d346c55dc24a099b1bc1d79
+SHA1: 854520f7aeb54d27892709eb5626aeed0f9430ad
+MD5sum: 163473320355783be2805f217a0ef9a3
+Description: Skywire: Decentralize the web. Skycoin.com. Debian package
+
