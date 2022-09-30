@@ -1,0 +1,10 @@
+Origin: skycoin
+Label: skycoin
+#Suite: skycoin
+Codename: sid
+Architectures: amd64 arm64 armhf armel i386 mips mipsel mips64el ppc64el riscv64 s390x
+Components: main
+Description: skycoin debian package repository
+SignWith: A8DC761B1C0C0CFC
+Update: skycoin
+#Log: /var/log/reprepro/skycoin.log

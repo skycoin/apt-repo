@@ -1,0 +1,29 @@
+Package: skybian
+Version: 1.1.0-3
+Architecture: amd64
+Depends: 
+Maintainer: Skycoin
+Priority: optional
+Section: web
+Filename: pool/main/s/skybian/skybian_1.1.0-3_amd64.deb
+Size: 3948
+SHA256: 2308ed7d9898e07f6f0bb7262bbd987baaf6e9a425a45d1f7d7ac134f50f2183
+SHA1: 6cfd89d58c68ff1216b5a30fc5446563587af77f
+MD5sum: 797c41d55f51d27d419cbde9160fcd99
+Description: Packaged modifications to the skybian image, including repo configuration - debian package
+
+Package: skywire-bin
+Version: 1.2.1-1
+Architecture: amd64
+Depends: 
+Provides: skywire
+Maintainer: skycoin
+Priority: optional
+Section: web
+Filename: pool/main/s/skywire-bin/skywire-bin_1.2.1-1_amd64.deb
+Size: 10333448
+SHA256: 64b771d04e97f5844833640cf27316a2cf5c3e875c34a63f0b4b53c857ac68f9
+SHA1: 920772c493eeb8bcad0c7dff66b5bdeb55114937
+MD5sum: 00be495c59d6d9848f4221b46a0b47af
+Description: Skywire: Decentralize the web. Skycoin.com. Debian package
+

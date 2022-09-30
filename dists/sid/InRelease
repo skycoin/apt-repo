@@ -1,0 +1,128 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA256
+
+Origin: skycoin
+Label: skycoin
+Codename: sid
+Date: Fri, 30 Sep 2022 15:15:10 UTC
+Architectures: amd64 arm64 armhf armel i386 mips mipsel mips64el ppc64el riscv64 s390x
+Components: main
+Description: skycoin debian package repository
+MD5Sum:
+ 9aa8eb93ca61474044fc6d8012af0a67 900 main/binary-amd64/Packages
+ d01cedd18c99e43b17ce411b5555799b 507 main/binary-amd64/Packages.gz
+ d342dd3ad564b7d3627a0d3bef072643 114 main/binary-amd64/Release
+ 175ab2a5db990a017456c2cab070e1a6 899 main/binary-arm64/Packages
+ 356bd73a5f289f791b62091f39f0431d 509 main/binary-arm64/Packages.gz
+ a7855e9d1acb31819b2b3f8a0b541b61 114 main/binary-arm64/Release
+ 0ebc964adaba1c06115ade8d486824f9 899 main/binary-armhf/Packages
+ cf6c63648f861a76f83ea91a96148869 508 main/binary-armhf/Packages.gz
+ 30d197fda65101deea30385dfb547e8c 114 main/binary-armhf/Release
+ c4fd6cd99cd200ce50467aa3dc642753 899 main/binary-armel/Packages
+ 784286605c4a87cfa63830c9e3d626a8 506 main/binary-armel/Packages.gz
+ 3d592de01b6f233c601521bf206aaa3d 114 main/binary-armel/Release
+ d41d8cd98f00b204e9800998ecf8427e 0 main/binary-i386/Packages
+ 7029066c27ac6f5ef18d660d5741979a 20 main/binary-i386/Packages.gz
+ 5c2fa6c46409b8137277ee066fac25c5 113 main/binary-i386/Release
+ d41d8cd98f00b204e9800998ecf8427e 0 main/binary-mips/Packages
+ 7029066c27ac6f5ef18d660d5741979a 20 main/binary-mips/Packages.gz
+ d64a6860fce86073f13ca88fac4c8ea5 113 main/binary-mips/Release
+ d41d8cd98f00b204e9800998ecf8427e 0 main/binary-mipsel/Packages
+ 7029066c27ac6f5ef18d660d5741979a 20 main/binary-mipsel/Packages.gz
+ b27112befc907e9893a1f8c352b0767c 115 main/binary-mipsel/Release
+ d41d8cd98f00b204e9800998ecf8427e 0 main/binary-mips64el/Packages
+ 7029066c27ac6f5ef18d660d5741979a 20 main/binary-mips64el/Packages.gz
+ 672118ee6ff05d2f79168e10b827c3ab 117 main/binary-mips64el/Release
+ d41d8cd98f00b204e9800998ecf8427e 0 main/binary-ppc64el/Packages
+ 7029066c27ac6f5ef18d660d5741979a 20 main/binary-ppc64el/Packages.gz
+ 69ab9c2303c3636af52149ad63031bb9 116 main/binary-ppc64el/Release
+ d41d8cd98f00b204e9800998ecf8427e 0 main/binary-riscv64/Packages
+ 7029066c27ac6f5ef18d660d5741979a 20 main/binary-riscv64/Packages.gz
+ 853790dfc0e43b6a9711380b237b1a7d 116 main/binary-riscv64/Release
+ d41d8cd98f00b204e9800998ecf8427e 0 main/binary-s390x/Packages
+ 7029066c27ac6f5ef18d660d5741979a 20 main/binary-s390x/Packages.gz
+ 810c1431dd0ba31bced37fbe6a723ec7 114 main/binary-s390x/Release
+SHA1:
+ 0fffe903d70a4c7aaa1acfcf7a0a49ebb88c524d 900 main/binary-amd64/Packages
+ ebe77c39d74f7f43fcea07acdae49e08bb427fa0 507 main/binary-amd64/Packages.gz
+ 85e3b552ba1f3935ef2ddabccb293b6601714534 114 main/binary-amd64/Release
+ eaa483ce10b5a62a23e14280b7ddfda823855fc8 899 main/binary-arm64/Packages
+ 5111db059ead69556731f4c94f4917cc1dcc260a 509 main/binary-arm64/Packages.gz
+ 8764d1fadcee702ac7a9f34d247154ab47ba7d29 114 main/binary-arm64/Release
+ 00fde608c0ea73fe08a64b86bf4aaf9d26a8a056 899 main/binary-armhf/Packages
+ af9b9b05d7f7e7a310891b468938a7b93d02d6ed 508 main/binary-armhf/Packages.gz
+ 98f3657fac17fd6b630d1fa474f88edefedd8458 114 main/binary-armhf/Release
+ 27995a07cf81d44133effab5da996848eea6a4d6 899 main/binary-armel/Packages
+ b48de4e24564e9b5a25054191f552f45dbb3df60 506 main/binary-armel/Packages.gz
+ 5dc77e053728305cf80139315b2b35690470dc58 114 main/binary-armel/Release
+ da39a3ee5e6b4b0d3255bfef95601890afd80709 0 main/binary-i386/Packages
+ 46c6643f07aa7f6bfe7118de926b86defc5087c4 20 main/binary-i386/Packages.gz
+ dd99d29eb4b00b2922cb75b36aeae250f226d16c 113 main/binary-i386/Release
+ da39a3ee5e6b4b0d3255bfef95601890afd80709 0 main/binary-mips/Packages
+ 46c6643f07aa7f6bfe7118de926b86defc5087c4 20 main/binary-mips/Packages.gz
+ b8b2ce793c115e210b588bd682aca1f70e26b3b5 113 main/binary-mips/Release
+ da39a3ee5e6b4b0d3255bfef95601890afd80709 0 main/binary-mipsel/Packages
+ 46c6643f07aa7f6bfe7118de926b86defc5087c4 20 main/binary-mipsel/Packages.gz
+ 2bc0b81b5013658c71932f269377debb5f49937b 115 main/binary-mipsel/Release
+ da39a3ee5e6b4b0d3255bfef95601890afd80709 0 main/binary-mips64el/Packages
+ 46c6643f07aa7f6bfe7118de926b86defc5087c4 20 main/binary-mips64el/Packages.gz
+ 401dcebe6e47d4e5e97066a4f27fc45029fcf75a 117 main/binary-mips64el/Release
+ da39a3ee5e6b4b0d3255bfef95601890afd80709 0 main/binary-ppc64el/Packages
+ 46c6643f07aa7f6bfe7118de926b86defc5087c4 20 main/binary-ppc64el/Packages.gz
+ 41e3365736de663d7322708bd2d2bb22e0d399fa 116 main/binary-ppc64el/Release
+ da39a3ee5e6b4b0d3255bfef95601890afd80709 0 main/binary-riscv64/Packages
+ 46c6643f07aa7f6bfe7118de926b86defc5087c4 20 main/binary-riscv64/Packages.gz
+ 9aa97f964953d4336f624197b7515a069ea960b0 116 main/binary-riscv64/Release
+ da39a3ee5e6b4b0d3255bfef95601890afd80709 0 main/binary-s390x/Packages
+ 46c6643f07aa7f6bfe7118de926b86defc5087c4 20 main/binary-s390x/Packages.gz
+ 8af64d90f9a5949022a0ffe7db56a34cce321b01 114 main/binary-s390x/Release
+SHA256:
+ 4fbc259b683698cb39ef4186ffa517468899f59aaa85552d2c26e402e370e8ab 900 main/binary-amd64/Packages
+ 2e7552d106ecd73826e3692151661da85762c31006affb2a052223bbd54073b6 507 main/binary-amd64/Packages.gz
+ d2fde22f5e2df8ef11c8d2efb152bd3e20b258923c92e324001217fff0e0bfc3 114 main/binary-amd64/Release
+ 513ad2f0c08c5bf5fe42006328614715ceaaf4ed6b8b16f49a583a6215495bce 899 main/binary-arm64/Packages
+ a58370583110e6aa7b1e6c2a1c13e4e9a3a912cfce831266248e670b1b6f4f77 509 main/binary-arm64/Packages.gz
+ ab6fa01abaa8ef3e981f38a93d7ad0cd83d9e6b507dd5bdfbb9b8ac451e00862 114 main/binary-arm64/Release
+ 9e01a75d3777985182363c04da93d41cb3ad688cddf83707136cc3dbe1006e92 899 main/binary-armhf/Packages
+ 84b2a548c680c0162149ea16f7c926852b01e1095fb988df53c7519a1c2475f6 508 main/binary-armhf/Packages.gz
+ 9f4ea8d13fe22638c9559fc6f1aeee62c042fcc506cc34dfb03c9b5cbb514854 114 main/binary-armhf/Release
+ aa9c45706d68aa7187de9ef66ca243115689609b23e1b601dcab8149c83d352a 899 main/binary-armel/Packages
+ 20a00da5b878119b3f717c460e50972f7f7e613e762f669f9b52b2c76f09baa7 506 main/binary-armel/Packages.gz
+ bf26d01726c3e2f91b48b0ed4d0a39686c7f324404490d1b278e465c3585e78a 114 main/binary-armel/Release
+ e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 0 main/binary-i386/Packages
+ 59869db34853933b239f1e2219cf7d431da006aa919635478511fabbfc8849d2 20 main/binary-i386/Packages.gz
+ 55325eef119a2132a500d55ea1f9125c3943ede1f618c93241079126d44e7851 113 main/binary-i386/Release
+ e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 0 main/binary-mips/Packages
+ 59869db34853933b239f1e2219cf7d431da006aa919635478511fabbfc8849d2 20 main/binary-mips/Packages.gz
+ 4a4ba85a28583619255e37465cf20924e1a6169dfabe080566b4c0beef449225 113 main/binary-mips/Release
+ e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 0 main/binary-mipsel/Packages
+ 59869db34853933b239f1e2219cf7d431da006aa919635478511fabbfc8849d2 20 main/binary-mipsel/Packages.gz
+ 31c38aa66bcd4afae77159e7d92e5ea8cefc33196807c32a3a28cad67cd47fa4 115 main/binary-mipsel/Release
+ e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 0 main/binary-mips64el/Packages
+ 59869db34853933b239f1e2219cf7d431da006aa919635478511fabbfc8849d2 20 main/binary-mips64el/Packages.gz
+ 5c57bf8faabacdb16936245fbdfae933094b80591d6aaef207aa863b5a0e4d1c 117 main/binary-mips64el/Release
+ e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 0 main/binary-ppc64el/Packages
+ 59869db34853933b239f1e2219cf7d431da006aa919635478511fabbfc8849d2 20 main/binary-ppc64el/Packages.gz
+ 96f1d19c23faa471ce6d3499aef0ebfb5072f8cbcc5f8d370395b3114eba8298 116 main/binary-ppc64el/Release
+ e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 0 main/binary-riscv64/Packages
+ 59869db34853933b239f1e2219cf7d431da006aa919635478511fabbfc8849d2 20 main/binary-riscv64/Packages.gz
+ 2c94b313734feda9f195f8b43329f649c3dbc2414a215f50b1c98c6b3278bcca 116 main/binary-riscv64/Release
+ e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 0 main/binary-s390x/Packages
+ 59869db34853933b239f1e2219cf7d431da006aa919635478511fabbfc8849d2 20 main/binary-s390x/Packages.gz
+ 9b9f8d74e304af1d11a6fd9e9a76d583577b17ddf63668224ecb512b79b19200 114 main/binary-s390x/Release
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEE3gj5JO7pODLavGQsqNx2GxwMDPwFAmM3B/4ACgkQqNx2GxwM
+DPwOYg/9GIjY43ZAAmXFpH0cgTcKBmOAxMNnSWg65tQaORLL1isCe06nDeuFPUio
+0jRmYbsGVEQgTPZmO/RSR2dRNA6Ceayte7haGH+6NDnZegk7gzB/8hRV8wlpoPgw
+5zFBdkiqerYnFjjV/msg2spU372KodIFYM43+ZN/B5vBLw0xGecP3Nwz2I3O/9yp
+O2pwRi0OXPbem6oMqessEEGEVBaTKtMofBVgn6oPNbcx5S6npT4F3aav1TU+qyRh
+b7JYnVRFpmJdb5MlGWO8wiVX0Lrz1zRtAnqCicO6rZ/0+FNb9K6+3r35Tphfju6+
+jko0q9lAETE3luQKYk7Cg+PGWb8oYeYOda884aZJYkOdfBEIHE4PZIiDRGBRiTbJ
+jknZgaLffSdssr9FALgddy4HxUFwb40IcO6Y8eB8KwNX4IaAljd3Qp59sZk7ywu/
+0L0aMspVNym6DiS2QHM8l0rT1zzzoCCImqvAybHpf92zA2ENdcPxQ/IaF7LvtBFL
+cLBEoIaFR86AYsipmSrovJgbYg2xbxZQo+99/X1exeb1vyXaTc91aKrDb2EMfVI1
+NpGgR/TA0QVgrSPXk49whrwqOpcGZibpznvpA51OmZGIAStCuZoUGPxGBMUQm+QD
+dHWuaQZ1VmhH2tV4ytQObhNdLQ96JVvjTd7iuN4EQgZcZKXsUtE=
+=vhTv
+-----END PGP SIGNATURE-----
