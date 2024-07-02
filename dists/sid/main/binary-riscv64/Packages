@@ -1,0 +1,15 @@
+Package: skyrepo
+Version: 1.3.11-1
+Architecture: riscv64
+Depends: 
+Maintainer: Skycoin
+Priority: optional
+Section: web
+Filename: pool/main/s/skyrepo/skyrepo_1.3.11-1_riscv64.deb
+Size: 3940
+SHA512: 6b50fba059a2af7e81f0015894f4a0ab6375ab5e1746ef6fdeea20509a0e9ef6d9d42248a6f0411d69357e536ab986c88353bd43b2e760fd21189484ea572968
+SHA256: 87eeed988c1842bae305de79f3b6888f87af565ae1684a4e552bd93768c894f0
+SHA1: dcbe9c58d46d3cf470097053c507618522a750ed
+MD5sum: ea51ff0ba6f789b733c1b4a49322743c
+Description: Skycoin apt repo configuration & repo signing key - debian package
+
