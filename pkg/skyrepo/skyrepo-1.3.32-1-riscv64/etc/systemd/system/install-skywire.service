@@ -1,0 +1,12 @@
+[Unit]
+	Description=install skywire service
+	After=network-online.target
+	Wants=network-online.target
+
+	[Service]
+	Type=simple
+	ExecStart=/bin/install-skywire
+
+	[Install]
+	WantedBy=multi-user.target
+	
