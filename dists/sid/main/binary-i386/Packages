@@ -1,0 +1,31 @@
+Package: skyrepo
+Version: 1.3.32-1
+Architecture: i386
+Depends: 
+Maintainer: Skycoin
+Priority: optional
+Section: web
+Filename: pool/main/s/skyrepo/skyrepo_1.3.32-1_i386.deb
+Size: 3944
+SHA512: f1278f98cb8cfd44eb0387b487108bc34b340442c179b56368fcee70e3fc2196393075aabebfbbaf9a32c25394524c51ec310211d8ec92859425127f44d80802
+SHA256: 6d739eb628a9e8a0e2d00313ca7c34b3ba55f58c693511c518ec1b753b2c89b2
+SHA1: e98b62d21e44b37ec3a32148974c9bf5ef3da2d5
+MD5sum: bdc48ba281f8973ddf5e2003608aaeee
+Description: Skycoin apt repo configuration & repo signing key - debian package
+
+Package: skywire-bin
+Version: 1.3.39-1
+Architecture: i386
+Depends: 
+Provides: skywire
+Maintainer: skycoin
+Priority: optional
+Section: web
+Filename: pool/main/s/skywire-bin/skywire-bin_1.3.39-1_i386.deb
+Size: 44925916
+SHA512: 9fe9382edb0216085a7e36b95b1d9cb961bca5b6bc9f70927c66cd378a5d689240b5d3e82e53a9d9fbcae9782e479ae3721dabd90ad650fd338eea0c1bfd2ece
+SHA256: cb922e089436dc03b9e4d6730bf639f0187f50c763be9c82a6d8640395d7723c
+SHA1: 222e65ae08661af2ec9e818be4a6227f395d97b4
+MD5sum: 55fa37654bbdad8fbb432731463bfda5
+Description: Skywire: Decentralize the web. Skycoin.com. Debian package
+

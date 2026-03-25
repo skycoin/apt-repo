@@ -1,0 +1,8 @@
+Package: skyrepo
+Version: 1.3.32-1
+Priority: optional
+Section: web
+Architecture: i386
+Depends: 
+Maintainer: Skycoin
+Description: Skycoin apt repo configuration & repo signing key - debian package
