@@ -1,0 +1,64 @@
+Package: skyrepo
+Version: 1.3.68-1
+Architecture: all
+Depends: 
+Replaces: skybian
+Conflicts: skybian
+Provides: skybian
+Maintainer: Skycoin
+Priority: optional
+Section: web
+Filename: pool/main/s/skyrepo/skyrepo_1.3.68-1_all.deb
+Size: 10412
+SHA512: a3eeacc356e10264ff028d0d6c5b929ae6d17a69719ccd4aa975687282fe5289120c3ab78de32741144909f3a62b89c4ece4f5e2f33ce4cad9244fb233c2b213
+SHA256: 7b7f3391b0adfa8cc4b54c3804d001aa78a29401b14f2dd9927cebe6c5235cbb
+SHA1: 9300ee56fcf9b1af1bb99d2882ef35d463e09115
+MD5sum: 13746d966426554423256992907d66ea
+Description: Skycoin apt repo configuration, signing key, install-skywire service + skybian-style autoconfig payload - debian package
+
+Package: skywire-autoupdate
+Version: 1.3.67-2
+Architecture: all
+Depends: skywire-bin, golang
+Maintainer: Skycoin
+Priority: optional
+Section: web
+Filename: pool/main/s/skywire-autoupdate/skywire-autoupdate_1.3.67-2_all.deb
+Size: 5852
+SHA512: 1c223b211af5da9643bd0ec39a405aef2129a55d5663e370caf43c6d28331fd9b43876adce2d69f8b054f2fa7f7947cff59f75cdda35ea31855791382cc9f2d6
+SHA256: 7c57f5c5b9638eb5d9c778d6d2fda63f2167b6542b522309695d6d7313ecc4f5
+SHA1: 98c86168c90eddfa93061c28ac2ccf19004c9121
+MD5sum: 23cf7d1849cfaad67c1678a93b0bc536
+Description: Skywire auto-updater: compiles latest CI-tested commit daily - debian package
+
+Package: skywire-bin
+Version: 1.3.77-1
+Architecture: riscv64
+Depends: 
+Provides: skywire
+Maintainer: skycoin
+Priority: optional
+Section: web
+Filename: pool/main/s/skywire-bin/skywire-bin_1.3.77-1_riscv64.deb
+Size: 47903960
+SHA512: 2b145c4e32afb0864ebd976ee0922067f8406aa83912159aebba18ec8d6a2d27fc671e31a39144ec9b774d681a56d5f4f9a24faf4bb32c2ea1065a7854a36f62
+SHA256: b3ba86f2ab022b1f5790da3564b76253de3e30e663672c07a02eaacd54079c1e
+SHA1: 954e2c300f575539d2b257b3ac5f43b89b94d684
+MD5sum: 7797909f7455a428a416daa651c1e142
+Description: Skywire: Decentralize the web. Skycoin.com. Debian package
+
+Package: skywire-docker-autopull
+Version: 1.3.61-1
+Architecture: all
+Depends: 
+Maintainer: Skycoin
+Priority: optional
+Section: web
+Filename: pool/main/s/skywire-docker-autopull/skywire-docker-autopull_1.3.61-1_all.deb
+Size: 1972
+SHA512: cca3511767b1c18656fc6e7a7ce03ac11ec7b79e313ce49bc3fc2286c03195aa3519f9ca775186c3f2ee049f7044e626f877bcb2d2dc212caf54b96faeb01ea6
+SHA256: e43ed84245345e43a92ebfa51b8e7831f7d19b3d569649097192342265e8f853
+SHA1: fde79c0bfa6e853c9c02d0932ad74e9f375a0356
+MD5sum: 9db4e12937bc470bde3f8e0e0bb3d10c
+Description: Skywire Docker deployment auto-updater: pulls latest image and recreates containers - debian package
+

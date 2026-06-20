@@ -1,0 +1,1232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Skywire — install command generator</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --fg: #c9d1d9;
+    --fg-dim: #8b949e;
+    --accent: #58a6ff;
+    --accent-dim: #1f6feb;
+    --warn: #f0883e;
+    --ok: #56d364;
+    --panel: #161b22;
+    --border: #30363d;
+    --code-bg: #010409;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.5;
+  }
+  header {
+    padding: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  header h1 { margin: 0 0 4px; font-size: 22px; }
+  header p { margin: 0; color: var(--fg-dim); font-size: 13px; }
+  main {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+  /* Side-by-side layout on wide screens: form on the left, the
+     generated install command sticks to the right so the operator
+     watches it update as they tick checkboxes. On narrow screens
+     the right column drops below the left for the original
+     single-column flow. */
+  @media (min-width: 1100px) {
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 460px;
+      gap: 20px;
+      align-items: start;
+    }
+    .layout-right {
+      position: sticky;
+      top: 16px;
+    }
+  }
+  section {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+  }
+  section h2 {
+    margin: 0 0 12px;
+    font-size: 15px;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  label {
+    display: block;
+    margin: 10px 0;
+    font-size: 13px;
+  }
+  label code { color: var(--accent); }
+  label .desc { color: var(--fg-dim); font-size: 12px; margin-left: 6px; }
+  input[type="text"], input[type="number"], select {
+    background: var(--code-bg);
+    color: var(--fg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 6px 8px;
+    font-size: 13px;
+    font-family: ui-monospace, "Fira Code", Menlo, monospace;
+    width: 100%;
+    margin-top: 4px;
+  }
+  input[type="text"]:focus, input[type="number"]:focus, select:focus {
+    border-color: var(--accent);
+    outline: none;
+  }
+
+  /* Flag row — single column, vertical stack. Each row contains
+     a checkbox followed by label text on the same line; rows
+     align to the left so the user's eye + mouse move down a
+     single column. */
+  .flag-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 4px 0;
+    font-size: 13px;
+  }
+  .flag-row input[type="checkbox"] {
+    flex: 0 0 auto;
+    margin: 0;
+  }
+  .flag-row .flag-key {
+    color: var(--accent);
+    font-family: ui-monospace, "Fira Code", Menlo, monospace;
+    font-size: 12px;
+    flex: 0 0 200px;
+  }
+  .flag-row .flag-desc {
+    color: var(--fg-dim);
+    font-size: 12px;
+    flex: 1 1 auto;
+  }
+  /* Negation rows are visually subordinate to their parent positive
+     row — indented and dimmed so the operator's eye reads the
+     positive options as the primary surface and the negations as
+     a secondary "revert" affordance. Hidden by default; the master
+     toggle below the section heading exposes them. */
+  .flag-row.negation {
+    margin-left: 24px;
+    color: var(--warn);
+    display: none;
+  }
+  .show-negations .flag-row.negation { display: flex; }
+  .flag-row.negation .flag-key { color: var(--warn); }
+
+  /* Field row — text/numeric input. Same vertical layout as flag-row
+     but the input sits on its own line below the label. */
+  .field-row {
+    padding: 8px 0;
+  }
+  .field-row .field-key {
+    color: var(--accent);
+    font-family: ui-monospace, "Fira Code", Menlo, monospace;
+    font-size: 12px;
+    display: inline-block;
+    min-width: 200px;
+  }
+  .field-row .field-desc {
+    color: var(--fg-dim);
+    font-size: 12px;
+    margin-left: 6px;
+  }
+  .field-row input { margin-top: 6px; }
+
+  /* Per-flag annotation note (external links, extra guidance,
+     warnings) appended beneath a flag/field row. */
+  .flag-note {
+    font-size: 11px;
+    color: var(--fg-dim);
+    line-height: 1.45;
+    margin: 2px 0 6px 28px;
+  }
+  .flag-note a { color: var(--accent); }
+  .flag-note code { color: var(--accent); }
+  .flag-note.red { color: #ff6b6b; }
+  /* Rows flagged not-for-rewards (e.g. --disable-public-autoconn). */
+  .flag-warn-red .flag-key,
+  .flag-warn-red .flag-desc { color: #ff6b6b; }
+
+  /* Inline validation message under a PK / reward-address input. */
+  .field-msg { font-size: 11px; margin: 4px 0 0; line-height: 1.45; }
+  .field-msg.error { color: #ff6b6b; }
+  .field-msg.ok { color: var(--ok); }
+  .field-msg .derived {
+    display: block;
+    font-family: ui-monospace, "Fira Code", Menlo, monospace;
+    color: var(--fg-dim);
+    margin-left: 12px;
+  }
+
+  pre.output {
+    background: var(--code-bg);
+    color: var(--fg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 12px;
+    font-family: ui-monospace, "Fira Code", Menlo, monospace;
+    font-size: 12px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+    line-height: 1.5;
+    margin: 0;
+  }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  button {
+    background: var(--accent-dim);
+    color: white;
+    border: 0;
+    border-radius: 4px;
+    padding: 8px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  button:hover { background: var(--accent); }
+  button.ghost { background: transparent; border: 1px solid var(--border); color: var(--fg); }
+  button.ghost:hover { background: var(--panel); border-color: var(--accent); }
+
+  /* Platform tabs — segmented control at the top. */
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  .tab {
+    background: transparent;
+    color: var(--fg-dim);
+    border: 0;
+    border-bottom: 2px solid transparent;
+    padding: 10px 16px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .tab:hover { color: var(--fg); }
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+  /* Sections gated by platform — hidden unless the body has a
+     `.platform-X` class matching the section's data-platforms list. */
+  [data-platforms]:not(.always-show) { display: none; }
+  body.platform-deb [data-platforms~="deb"],
+  body.platform-arch [data-platforms~="arch"],
+  body.platform-win [data-platforms~="win"],
+  body.platform-mac [data-platforms~="mac"] { display: block; }
+
+  .keypair-display {
+    margin-top: 8px;
+    padding: 10px;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-family: ui-monospace, "Fira Code", Menlo, monospace;
+    font-size: 11px;
+  }
+  .keypair-display .label { color: var(--fg-dim); display: inline-block; width: 30px; }
+  .keypair-display .warn {
+    color: var(--warn);
+    font-size: 11px;
+    margin-top: 6px;
+    font-family: inherit;
+  }
+  details summary {
+    cursor: pointer;
+    color: var(--accent);
+    font-size: 13px;
+    padding: 4px 0;
+  }
+  details summary:hover { color: white; }
+  .status-bar {
+    font-size: 11px;
+    color: var(--fg-dim);
+    text-align: right;
+    margin-top: 8px;
+  }
+  .status-bar .ok { color: var(--ok); }
+
+  .master-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    margin-bottom: 14px;
+    font-size: 12px;
+    color: var(--fg-dim);
+  }
+  .master-toggle code { color: var(--accent); }
+
+  /* Group headers separate flag categories. Subtle — they don't
+     compete with the main section h2 headings for attention. */
+  .group-header {
+    margin: 16px 0 4px;
+    padding: 0;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--fg-dim);
+  }
+  .group-header:first-child { margin-top: 4px; }
+</style>
+</head>
+<body class="platform-deb">
+
+<header>
+  <h1>Skywire installer command generator</h1>
+  <p>Pick your platform, fill in the form. The one-line install command below updates live — copy-paste into the target host's terminal.</p>
+</header>
+
+<main>
+
+  <!-- Platform tab selector. Each tab toggles the body class
+       (platform-deb / platform-arch / platform-win) which the
+       data-platforms CSS rules use to show/hide platform-gated
+       sections. -->
+  <div class="tabs">
+    <button class="tab active" data-platform="deb">Debian / Ubuntu</button>
+    <button class="tab" data-platform="arch">Arch Linux</button>
+    <button class="tab" data-platform="mac">macOS</button>
+    <button class="tab" data-platform="win">Windows</button>
+  </div>
+
+  <!-- Two-column layout on wide screens: form on the left, install
+       command + downloads sticky on the right. Single column on
+       narrow screens via the @media query in the stylesheet. -->
+  <div class="layout">
+
+  <div class="layout-left">
+
+  <section data-platforms="deb">
+    <h2>apt mirror</h2>
+    <label>
+      mirror URL
+      <select id="mirror">
+        <option value="https://deb.theskywirenetwork.net">deb.theskywirenetwork.net</option>
+        <option value="https://deb.skywire.skycoin.com">deb.skywire.skycoin.com</option>
+        <option value="https://deb.skywire.dev">deb.skywire.dev</option>
+      </select>
+    </label>
+    <label><input type="checkbox" id="opt-run-install" checked>
+      Install skywire from the apt mirror
+      <span class="desc">when unchecked, the generated command does <strong>not</strong> install anything — it only runs the <code>skywire autoconfig</code> configuration (use this to (re)configure a visor that's already installed). Removes the <code>curl … skyrepo.deb … (install-skywire || apt install skywire-bin)</code> step.</span>
+    </label>
+  </section>
+
+  <section data-platforms="deb arch">
+    <h2>After install</h2>
+    <label><input type="checkbox" id="opt-enable-service" checked>
+      Enable + start <code>skywire.service</code> immediately
+      <span class="desc">runs <code>systemctl enable --now skywire</code></span>
+    </label>
+    <label data-platforms="deb"><input type="checkbox" id="opt-unattended-upgrades">
+      Enable unattended-upgrades for Skycoin packages
+      <span class="desc">installs <code>unattended-upgrades</code> and fully enables it for Skycoin packages: copies <code>52unattended-upgrades-skycoin</code> (allow the skycoin origin) <strong>and</strong> <code>99skycoin-periodic</code> (force apt's periodic timer ON — needed on distros like Armbian that ship <code>APT::Periodic::Enable "0"</code>) into <code>/etc/apt/apt.conf.d/</code>, plus a systemd drop-in that refreshes the package lists right before each unattended-upgrade so a new release is installed the <strong>same day</strong> instead of lagging a cycle</span>
+    </label>
+    <label data-platforms="deb"><input type="checkbox" id="opt-pty-safe-install">
+      Pty-safe install (installing over <code>skywire cli dmsg pty exec</code>)
+      <span class="desc">runs the install under <code>install-skywire.service</code> so the postinst's service restart doesn't kill the dmsgpty session mid-install; check it ran with <code>journalctl -u install-skywire</code>. Leave unchecked for ssh / console / serial.</span>
+    </label>
+  </section>
+
+  <section class="always-show">
+    <h2>Visor configuration</h2>
+
+    <label class="master-toggle">
+      <input type="checkbox" id="show-negations">
+      <span>Show explicit-disable flags (<code>--no-X</code>)</span>
+      <span class="desc">Exposes the negation flags for paired toggles. Use these to revert a previously-enabled feature (writes <code>KEY=false</code> to <code>skywire.conf</code>) or to explicitly disable a feature that's <strong>on by default</strong> like <code>vpnserver</code>, <code>proxyserver</code>, <code>skychat</code>, <code>servechatpair</code>.</span>
+    </label>
+
+    <div id="autoconfig-flags"><em>Loading flag set from WASM…</em></div>
+  </section>
+
+  <section class="always-show">
+    <h2>Visor identity (optional)</h2>
+    <p style="font-size:12px;color:var(--fg-dim);margin:0 0 8px">
+      Generated locally in your browser via the WASM cipher. The secret key never leaves this page.
+      Skip this section to let the visor generate its own identity on first boot.
+    </p>
+    <div class="row">
+      <button id="btn-genkey">Generate keypair</button>
+      <button id="btn-clearkey" class="ghost">Clear</button>
+    </div>
+    <div id="keypair-display" class="keypair-display" style="display:none">
+      <div><span class="label">PK:</span> <span id="display-pk"></span></div>
+      <div><span class="label">SK:</span> <span id="display-sk"></span></div>
+      <div class="warn">⚠ Treat the SK like a password. Don't paste it into chat, screenshots, or pastebins.</div>
+    </div>
+  </section>
+
+  <section class="always-show">
+    <details>
+      <summary>Raw <code>skywire autoconfig --help</code> output (from this build of skywire)</summary>
+      <pre class="output" id="autoconfig-help">…</pre>
+    </details>
+  </section>
+
+  </div><!-- /.layout-left -->
+
+  <div class="layout-right">
+
+  <section class="always-show">
+    <h2>Generated install command</h2>
+    <pre class="output" id="install-cmd">building…</pre>
+    <div class="row" style="margin-top:10px">
+      <button id="btn-copy-cmd">Copy command</button>
+      <button id="btn-copy-conf" class="ghost">Download <code>/etc/skywire.conf</code></button>
+      <button id="btn-download-skywire-json" class="ghost">Download <code>skywire.json</code></button>
+      <span id="copy-feedback" style="color:var(--ok);font-size:12px"></span>
+    </div>
+    <p data-platforms="win" style="font-size:12px;color:var(--warn);margin:10px 0 0">
+      ⚠ Windows: paste the command into an <strong>elevated PowerShell</strong> (Run as Administrator). The installer runs <code>msiexec /i /quiet</code> which needs admin rights to write to <code>C:\Program Files\Skywire</code> and register the Windows service. Architecture is picked at runtime from <code>$env:PROCESSOR_ARCHITECTURE</code> — amd64 (x64), 386 (32-bit), and arm64 are all supported (arm64 starting with the release that follows v1.3.56; earlier releases have no <code>windows-arm64.msi</code> asset and the download will 404).
+    </p>
+    <p data-platforms="mac" style="font-size:12px;color:var(--warn);margin:10px 0 0">
+      ⚠ macOS: the release <code>.pkg</code> is <strong>not signed</strong>. The command runs <code>xattr -dr com.apple.quarantine</code> to strip the Gatekeeper-blocking attribute that <code>curl</code> tags downloaded files with — equivalent to right-clicking → Open in Finder to acknowledge the unsigned source. The rest of the install (<code>sudo installer -pkg ... -target /</code>) is the standard pkg install path. The visor runs as a per-user app at <code>/Applications/Skywire.app</code> (no system launchd daemon); start it from Finder or via <code>open -a Skywire</code> after install.
+    </p>
+    <p style="font-size:12px;color:var(--fg-dim);margin:10px 0 0">
+      <code>skywire.json</code> is the visor's runtime config — composed in-browser via the
+      <code>genvisor</code> package against the embedded prod (or test) deployment.
+      Drop it at <code>/opt/skywire/skywire.json</code> (Linux) or
+      <code>C:\Program Files\Skywire\skywire.json</code> (Windows) before starting the
+      service if you want to skip the first-boot autogen step.
+    </p>
+  </section>
+
+  <div class="status-bar">
+    WASM: <span id="wasm-status">loading…</span>
+    &nbsp;·&nbsp; skywire <span id="skywire-version">unknown</span>
+  </div>
+
+  </div><!-- /.layout-right -->
+
+  </div><!-- /.layout -->
+
+</main>
+
+<script>{{.WasmExecJs}}</script>
+<script>
+// Skywire version comes from the WASM at startup via
+// window.skywireVersion(). Set in the wasm-ready handler below;
+// used by buildWindowsCommand() for the MSI URL. The asset
+// filenames on GitHub releases include the version, so we need
+// the exact value the WASM was built against — which is also
+// the version that defines the autoconfig flag set rendered on
+// this page. Bumping apt-repo's skywire dep to a new release
+// refreshes both the flag set and the URL in one step.
+let SKYWIRE_VERSION = "";
+
+(async function() {
+  const wasmB64 = "{{.WasmBase64}}";
+  const wasmBytes = Uint8Array.from(atob(wasmB64), c => c.charCodeAt(0));
+
+  const go = new Go();
+  const result = await WebAssembly.instantiate(wasmBytes, go.importObject);
+  go.run(result.instance);
+})().catch(e => {
+  document.getElementById('wasm-status').textContent = 'failed to load: ' + e.message;
+});
+
+window.addEventListener('skywire-wasm-ready', () => {
+  document.getElementById('wasm-status').innerHTML = '<span style="color:var(--ok)">ready</span>';
+  SKYWIRE_VERSION = window.skywireVersion();
+  document.getElementById('skywire-version').textContent = SKYWIRE_VERSION || 'unknown';
+
+  // Pull flag spec from the WASM. Returned as a JSON string we
+  // parse here — the syscall/js bridge would deep-marshal if we
+  // returned a Go map directly but JSON.stringify keeps the wire
+  // format predictable across Go and TinyGo.
+  const flags = JSON.parse(window.autoconfigFlags());
+  renderFlagWidgets(flags);
+  document.getElementById('autoconfig-help').textContent = window.autoconfigHelp();
+  refresh();
+});
+
+// Platform tab switching. Each click updates the body class so the
+// CSS data-platforms attribute rules show/hide the right sections.
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    document.body.className = 'platform-' + tab.dataset.platform;
+    refresh();
+  });
+});
+
+// Master-toggle for negation flags. Adds/removes the
+// 'show-negations' class on the flag container, which the CSS uses
+// to flip the display of .flag-row.negation between none and flex.
+document.getElementById('show-negations').addEventListener('change', e => {
+  const root = document.getElementById('autoconfig-flags');
+  root.classList.toggle('show-negations', e.target.checked);
+  // Also re-run refresh so any newly-allowed negation checkboxes
+  // that were already ticked update the install command. (Ticked
+  // negations DO emit --no-X regardless of master-toggle state;
+  // the toggle only controls visibility.)
+  refresh();
+});
+
+// SKYENV vars that default to TRUE in `cli config gen` (via
+// scriptExecBool("${VAR:-true}")). For these flags the positive
+// (--X) form is a no-op against a fresh install — the feature is
+// already on. The UI hides the positive checkbox for these and
+// only shows the negation (--no-X) under the master toggle, so the
+// main visible surface contains "things the operator turns ON".
+//
+// If skywire's config-gen defaults change, refresh this set —
+// it's the only authoritative copy on the JS side. A future
+// refactor could surface these defaults through autoconfigcmd's
+// EnvMap so the WASM provides the metadata directly.
+const DEFAULT_ON_ENV_KEYS = new Set([
+  'VPNSERVER', 'PROXYSERVER', 'SKYCHAT', 'SKYCHATPAIR',
+]);
+
+// Flag-rendering order. The form's mental model is "operator
+// intent" — the things people tweak most often go first. Within
+// each group, flags appear in the order listed below. Anything
+// not in this list falls through to the catch-all "More" group
+// at the end so newly-added flags still show up even if we
+// forget to categorize them.
+//
+// Categories use the flag NAME (positive form for paired bools).
+// Groups with `advanced: true` render inside a collapsed <details>
+// (see appendGroup) so the always-visible surface stays small —
+// just the few settings casual operators touch most: hypervisor,
+// remote hypervisor(s), reward address (plus the After-install
+// checkboxes for unattended-upgrades + service-at-boot, which live
+// in their own section at the top). Everything else is one expand
+// away.
+const FLAG_GROUPS = [
+  // ── Common — always visible ──
+  {label: 'Hypervisor', advanced: false, flags: [
+    'ishv', 'hvpks', 'hvaddr',
+  ]},
+  {label: 'Rewards', advanced: false, flags: [
+    'rewardaddr',
+  ]},
+
+  // ── Advanced — collapsed by default ──
+  // Public-visor config kept together: --public and the stcpr/sudph
+  // ports + registration timeout + transport limit must be set as a
+  // unit (a machine without a public IP needs the ports forwarded).
+  // --disable-public-autoconn sits last with a rewards warning.
+  {label: 'Public visor', advanced: true, flags: [
+    'public', 'stcpr', 'sudph', 'regtimeout', 'maxtransports', 'disable-public-autoconn',
+  ]},
+  {label: 'Embedded resolving proxies', advanced: true, flags: [
+    'dmsgweb', 'skynetweb', 'dmsgweb-upstream', 'skynetweb-upstream',
+  ]},
+  {label: 'Skymail bridge', advanced: true, flags: [
+    'skymail-bridge',
+  ]},
+  {label: 'Transport', advanced: true, flags: [
+    'lan-dmsg-port', 'lan-dmsg-public',
+  ]},
+  {label: 'Skychat', advanced: true, flags: [
+    'chataddr',
+    // skychat / servechatpair (default-on) appear only in the
+    // negation section.
+  ]},
+  {label: 'VPN feature config', advanced: true, flags: [
+    'killsw', 'addvpn', 'vpnwl', 'secure', 'netifc',
+  ]},
+  {label: 'Proxy feature config', advanced: true, flags: [
+    'proxyclientpk', 'startproxyclient', 'proxywl',
+  ]},
+  {label: 'Routing', advanced: true, flags: [
+    'calculate-routes', 'routesetup', 'tpsetup',
+  ]},
+  {label: 'Whitelists', advanced: true, flags: [
+    'dmsgpty-pks', 'survey',
+  ]},
+  {label: 'Service discovery & deployment', advanced: true, flags: [
+    'testenv', 'minsess', 'stun', 'url', 'svcconf',
+  ]},
+  {label: 'Visor runtime', advanced: true, flags: [
+    'publicip', 'binpath', 'loglvl', 'timeout',
+  ]},
+  {label: 'Identity overrides (advanced)', advanced: true, flags: [
+    'sk', 'version',
+  ]},
+  {label: 'Skycoin daemon', advanced: true, flags: [
+    'skycoind', 'skycoindfiber', 'skycoindapi', 'skycoindUSER',
+    'skycoindinstances', 'skycoindflags',
+  ]},
+  {label: 'Skycoin web wallet', advanced: true, flags: [
+    'skycoinweb', 'skycoinwebaddr', 'skycoinwebnodes',
+    'skycoinwebwallet', 'skycoinwebuser',
+  ]},
+];
+
+// Per-flag annotations layered on top of the WASM-provided
+// description: external links + extra notes + a red "not for
+// rewards" warning. Keyed by flag name (positive form for pairs).
+const FLAG_ANNOTATIONS = {
+  'public': {
+    note: 'Lists this visor in the <a href="http://sd.skycoin.com/api/services?type=visor" target="_blank" rel="noopener">public visor service discovery</a>. <strong>If this machine does not already have a public IP, you must port-forward the <code>--stcpr</code> / <code>--sudph</code> ports (set below) on your router</strong> — otherwise the visor is not reachable.',
+  },
+  'disable-public-autoconn': {
+    red: true,
+    note: '⚠ This is NOT a rewards-eligible configuration — a visor with public autoconnect disabled does not earn rewards.',
+  },
+  'url': {
+    note: 'e.g. the conf service at <a href="https://conf.skywire.skycoin.com" target="_blank" rel="noopener">conf.skywire.skycoin.com</a>',
+  },
+};
+
+// Group paired flags so each ENV var with both --X and --no-X
+// renders as one positive checkbox + one negation checkbox (the
+// negation is hidden by default and exposed by the master toggle).
+// Non-paired bool flags get a single positive checkbox; non-bool
+// flags (int/string) get a labeled input.
+function groupPairedFlags(flags) {
+  const byEnvKey = {};
+  for (const f of flags) {
+    if (f.type !== 'bool' || !f.env_key) continue;
+    if (!byEnvKey[f.env_key]) byEnvKey[f.env_key] = [];
+    byEnvKey[f.env_key].push(f);
+  }
+  const pairs = {}; // env_key -> {positive, negative}
+  const inPair = new Set();
+  for (const k in byEnvKey) {
+    if (byEnvKey[k].length === 2) {
+      const positive = byEnvKey[k].find(f => !f.env_negate);
+      const negative = byEnvKey[k].find(f => f.env_negate);
+      if (positive && negative) {
+        pairs[positive.name] = {positive, negative};
+        inPair.add(positive.name);
+        inPair.add(negative.name);
+      }
+    }
+  }
+  const singles = {}; // name -> f
+  for (const f of flags) {
+    if (!f.env_key) continue; // skip display-only (verbose)
+    if (inPair.has(f.name)) continue;
+    singles[f.name] = f;
+  }
+  return {pairs, singles};
+}
+
+function renderFlagWidgets(flags) {
+  const root = document.getElementById('autoconfig-flags');
+  root.innerHTML = '';
+  const {pairs, singles} = groupPairedFlags(flags);
+
+  // Track which flags have been rendered so the "More" catch-all
+  // group at the end can pick up anything we missed in the
+  // FLAG_GROUPS table.
+  const rendered = new Set();
+
+  // Render groups in the FLAG_GROUPS order.
+  for (const group of FLAG_GROUPS) {
+    const groupRows = [];
+    for (const name of group.flags) {
+      const row = renderFlagRow(name, pairs, singles, rendered);
+      if (row) groupRows.push(row);
+    }
+    if (groupRows.length === 0) continue;
+    appendGroup(root, group.label, groupRows, group.advanced);
+  }
+
+  // "More" catch-all — anything in pairs/singles not yet rendered.
+  const leftoverRows = [];
+  for (const name in pairs) {
+    if (rendered.has(name)) continue;
+    const row = renderFlagRow(name, pairs, singles, rendered);
+    if (row) leftoverRows.push(row);
+  }
+  for (const name in singles) {
+    if (rendered.has(name)) continue;
+    const row = renderFlagRow(name, pairs, singles, rendered);
+    if (row) leftoverRows.push(row);
+  }
+  if (leftoverRows.length > 0) {
+    appendGroup(root, 'More', leftoverRows, true);
+  }
+
+  // Mutual exclusion for paired checkboxes — checking the
+  // positive un-checks the negation (and vice versa). It'd make
+  // no sense to write both KEY=true AND KEY=false in the same run.
+  root.querySelectorAll('input[type="checkbox"][data-pair]').forEach(box => {
+    box.addEventListener('change', () => {
+      if (!box.checked) return;
+      const pairKey = box.dataset.pair;
+      const role = box.dataset.role;
+      const sibling = root.querySelector(
+        `input[data-pair="${pairKey}"][data-role="${role === 'pos' ? 'neg' : 'pos'}"]`
+      );
+      if (sibling) sibling.checked = false;
+    });
+  });
+
+  // Wire change handlers.
+  root.addEventListener('input', refresh);
+  root.addEventListener('change', refresh);
+
+  // Inline crypto-backed validation for PK + reward-address inputs.
+  wireValidators();
+}
+
+// renderFlagRow builds the DOM for one flag entry and returns the
+// container element. Returns null if the flag isn't known to the
+// WASM (unlikely but possible if FLAG_GROUPS has a stale entry).
+//
+// For paired bool flags: emits the positive row UNLESS the
+// underlying ENV var defaults to true — those have no useful
+// positive form (it's already on), so we only emit the negation
+// row (which lives in the master-toggle-revealed section).
+function renderFlagRow(name, pairs, singles, rendered) {
+  if (rendered.has(name)) return null;
+  rendered.add(name);
+
+  // Paired bool — positive + negation.
+  //
+  // Layout depends on whether the env var is default-on:
+  //   default-off (most flags): positive row is always visible
+  //     (main "enable this" surface); negation row is gated by
+  //     the master toggle (for explicit-revert / KEY=false).
+  //   default-on (vpnserver, proxyserver, skychat, servechatpair):
+  //     BOTH rows are gated by the master toggle — the main surface
+  //     stays focused on "things to turn ON" since these are
+  //     already on by default. Under the master toggle the operator
+  //     sees both --X (re-enforce default, writes KEY=true) and
+  //     --no-X (disable, writes KEY=false). Re-enforcing matters
+  //     when /etc/skywire.conf has the line commented out and the
+  //     operator wants to make it explicit (or revert a previous
+  //     --no-X).
+  if (pairs[name]) {
+    const {positive, negative} = pairs[name];
+    const wrap = document.createElement('div');
+    const isDefaultOn = DEFAULT_ON_ENV_KEYS.has(positive.env_key);
+
+    const posId = 'flag-' + positive.name;
+    const pos = document.createElement('div');
+    pos.className = isDefaultOn ? 'flag-row negation' : 'flag-row';
+    const posDesc = isDefaultOn
+      ? `re-enforce ON (writes <code>${positive.env_key}=true</code>; default is on)`
+      : escapeHTML(positive.description);
+    pos.innerHTML = `
+      <input type="checkbox" id="${posId}" data-flag="${positive.name}" data-pair="${positive.env_key}" data-role="pos">
+      <span class="flag-key">--${positive.name}</span>
+      <span class="flag-desc">${posDesc}</span>
+    `;
+    wrap.appendChild(pos);
+
+    const negId = 'flag-' + negative.name;
+    const neg = document.createElement('div');
+    neg.className = 'flag-row negation';
+    const negDesc = isDefaultOn
+      ? `disable (writes <code>${positive.env_key}=false</code>; default is on)`
+      : `writes <code>${positive.env_key}=false</code>`;
+    neg.innerHTML = `
+      <input type="checkbox" id="${negId}" data-flag="${negative.name}" data-pair="${positive.env_key}" data-role="neg">
+      <span class="flag-key">--${negative.name}</span>
+      <span class="flag-desc">${negDesc}</span>
+    `;
+    wrap.appendChild(neg);
+    rendered.add(negative.name);
+    applyFlagAnnotation(wrap, name);
+    return wrap;
+  }
+
+  // Single (non-paired) bool.
+  const f = singles[name];
+  if (!f) return null;
+  if (f.type === 'bool') {
+    const id = 'flag-' + f.name;
+    const row = document.createElement('div');
+    row.className = 'flag-row';
+    row.innerHTML = `
+      <input type="checkbox" id="${id}" data-flag="${f.name}" data-type="bool">
+      <span class="flag-key">--${f.name}</span>
+      <span class="flag-desc">${escapeHTML(f.description)}</span>
+    `;
+    applyFlagAnnotation(row, name);
+    return row;
+  }
+
+  // Non-bool field (int / string). When EnvDefault is non-empty
+  // we surface it in the placeholder so operators see what value
+  // the visor will use if they don't override (e.g.
+  // "default: 127.0.0.1:8001"). Otherwise fall back to the
+  // generic "(unset — leave as in skywire.conf)" hint.
+  const id = 'flag-' + f.name;
+  const row = document.createElement('div');
+  row.className = 'field-row';
+  const inputType = f.type === 'int' ? 'number' : 'text';
+  const placeholder = f.env_default
+    ? `default: ${f.env_default}`
+    : '(unset — leave as in skywire.conf)';
+  row.innerHTML = `
+    <label>
+      <span class="field-key">--${f.name}</span>
+      <span class="field-desc">${escapeHTML(f.description)}</span>
+      <input type="${inputType}" id="${id}" data-flag="${f.name}" data-type="${f.type}" placeholder="${escapeHTML(placeholder)}">
+    </label>
+  `;
+  applyFlagAnnotation(row, name);
+  return row;
+}
+
+// appendGroup writes a group of rendered rows under `label`.
+// Common groups (advanced falsy) get a plain inline header and are
+// always visible. Advanced groups render inside a collapsed
+// <details> so the casual-user surface stays small — the operator
+// expands only the categories they care about.
+function appendGroup(root, label, rows, advanced) {
+  if (advanced) {
+    const details = document.createElement('details');
+    details.className = 'flag-group';
+    const summary = document.createElement('summary');
+    summary.textContent = label;
+    details.appendChild(summary);
+    for (const row of rows) details.appendChild(row);
+    root.appendChild(details);
+    return;
+  }
+  const header = document.createElement('h3');
+  header.className = 'group-header';
+  header.textContent = label;
+  root.appendChild(header);
+  for (const row of rows) root.appendChild(row);
+}
+
+function escapeHTML(s) {
+  const div = document.createElement('div');
+  div.textContent = s;
+  return div.innerHTML;
+}
+
+// applyFlagAnnotation layers FLAG_ANNOTATIONS onto a rendered flag
+// element: a red "not for rewards" class and/or an extra note line
+// (links, guidance) appended below the row. Keyed by flag name
+// (positive form for paired bools). No-op for un-annotated flags.
+function applyFlagAnnotation(el, name) {
+  const a = FLAG_ANNOTATIONS[name];
+  if (!a) return;
+  if (a.red) el.classList.add('flag-warn-red');
+  if (a.note) {
+    const note = document.createElement('div');
+    note.className = a.red ? 'flag-note red' : 'flag-note';
+    note.innerHTML = a.note;
+    el.appendChild(note);
+  }
+}
+
+// Flags whose value is one-or-more hex public keys (comma-separated).
+// Their inputs get inline crypto-backed validation via the WASM
+// validatePubKeys (real curve-point parse, not a length check).
+const PK_VALIDATE_FLAGS = ['hvpks', 'proxyclientpk', 'dmsgpty-pks', 'proxywl', 'vpnwl'];
+
+// ensureFieldMsg returns (creating if needed) the inline message
+// element appended under a field-row input.
+function ensureFieldMsg(input) {
+  const fieldRow = input.closest('.field-row');
+  if (!fieldRow) return null;
+  let msg = fieldRow.querySelector('.field-msg');
+  if (!msg) {
+    msg = document.createElement('div');
+    msg.className = 'field-msg';
+    fieldRow.appendChild(msg);
+  }
+  return msg;
+}
+
+// wireValidators attaches inline validation to the PK inputs and the
+// reward-address input. Validation runs in the WASM (cipher.PubKey /
+// skycoin address / bip32 xpub) — never a length heuristic. For an
+// xpub reward address it previews the first derived addresses so the
+// operator can confirm derivation matches their wallet. Called after
+// renderFlagWidgets builds the inputs.
+function wireValidators() {
+  if (typeof window.validatePubKeys === 'function') {
+    for (const name of PK_VALIDATE_FLAGS) {
+      const input = document.getElementById('flag-' + name);
+      if (!input) continue;
+      const run = () => {
+        const msg = ensureFieldMsg(input);
+        if (!msg) return;
+        const v = input.value.trim();
+        if (!v) { msg.className = 'field-msg'; msg.textContent = ''; return; }
+        let res;
+        try { res = JSON.parse(window.validatePubKeys(v)); } catch (e) { return; }
+        if (res.ok) {
+          msg.className = 'field-msg ok';
+          msg.textContent = res.count === 1 ? '✓ valid public key' : `✓ ${res.count} valid public keys`;
+        } else {
+          msg.className = 'field-msg error';
+          msg.textContent = '✗ invalid public key' + (res.invalid.length > 1 ? 's' : '') +
+            ': ' + res.invalid.join(', ');
+        }
+      };
+      input.addEventListener('input', run);
+    }
+  }
+
+  if (typeof window.validateRewardAddress === 'function') {
+    const input = document.getElementById('flag-rewardaddr');
+    if (input) {
+      const run = () => {
+        const msg = ensureFieldMsg(input);
+        if (!msg) return;
+        const v = input.value.trim();
+        if (!v) { msg.className = 'field-msg'; msg.textContent = ''; return; }
+        let res;
+        try { res = JSON.parse(window.validateRewardAddress(v)); } catch (e) { return; }
+        if (res.type === 'address') {
+          msg.className = 'field-msg ok';
+          msg.textContent = '✓ valid skycoin reward address';
+        } else if (res.type === 'xpub') {
+          msg.className = 'field-msg ok';
+          const derived = res.derived || [];
+          const lines = derived.map(a => `<span class="derived">${escapeHTML(a)}</span>`).join('');
+          msg.innerHTML = `✓ valid xpub key — first ${derived.length} derived addresses ` +
+            `(verify these match your wallet):` + lines;
+        } else {
+          msg.className = 'field-msg error';
+          msg.textContent = '✗ ' + (res.error || 'invalid reward address');
+        }
+      };
+      input.addEventListener('input', run);
+    }
+  }
+}
+
+// Collect operator selections into a list of --flag args to append
+// after `skywire autoconfig`. Every ticked checkbox + every
+// non-empty input contributes; everything else is skipped.
+function collectAutoconfigArgs() {
+  const args = [];
+  document.querySelectorAll('#autoconfig-flags input[type="checkbox"][data-flag]').forEach(el => {
+    if (el.checked) args.push('--' + el.dataset.flag);
+  });
+  document.querySelectorAll('#autoconfig-flags [data-flag][data-type]').forEach(el => {
+    const t = el.dataset.type;
+    const name = el.dataset.flag;
+    if (t === 'bool') return; // already handled above
+    if (t === 'int') {
+      const v = el.value.trim();
+      if (v && v !== '0') args.push('--' + name + '=' + v);
+    } else if (t === 'string') {
+      const v = el.value.trim();
+      if (v) args.push('--' + name + '=' + shellQuoteIfNeeded(v));
+    }
+  });
+  return args;
+}
+
+// Shell-quote a value if it contains anything outside the safe set.
+// The form's typical values (PKs, hex addrs, plain integers) don't
+// need quoting; comma-separated lists and addrs-with-colons do.
+function shellQuoteIfNeeded(v) {
+  if (/^[A-Za-z0-9_\-:./,]+$/.test(v)) return v;
+  return "'" + v.replace(/'/g, "'\\''") + "'";
+}
+
+// PowerShell quoting — single-quoted strings escape ' as ''.
+function pwshQuote(v) {
+  return "'" + v.replace(/'/g, "''") + "'";
+}
+
+// Detect the active platform from the body class. Returns one of
+// "deb" | "arch" | "mac" | "win" (the data-platform values on
+// the .tab buttons).
+function activePlatform() {
+  const cls = document.body.className;
+  if (cls.includes('platform-arch')) return 'arch';
+  if (cls.includes('platform-mac')) return 'mac';
+  if (cls.includes('platform-win')) return 'win';
+  return 'deb';
+}
+
+function refresh() {
+  const platform = activePlatform();
+  const autoArgs = collectAutoconfigArgs();
+  let cmd;
+  switch (platform) {
+    case 'arch':  cmd = buildArchCommand(autoArgs); break;
+    case 'mac':   cmd = buildMacCommand(autoArgs); break;
+    case 'win':   cmd = buildWindowsCommand(autoArgs); break;
+    case 'deb':
+    default:      cmd = buildDebCommand(autoArgs); break;
+  }
+  document.getElementById('install-cmd').textContent = cmd;
+}
+
+function buildDebCommand(autoArgs) {
+  const mirror = document.getElementById('mirror').value;
+  const runInstall = document.getElementById('opt-run-install').checked;
+  const enableService = document.getElementById('opt-enable-service').checked;
+  const unattended = document.getElementById('opt-unattended-upgrades').checked;
+  const ptySafe = document.getElementById('opt-pty-safe-install').checked;
+
+  // Install block (apt mirror → dpkg → install-skywire). Omitted when
+  // the "Install skywire from the apt mirror" box is unchecked so the
+  // page can be used purely to (re)configure an already-installed
+  // visor instead of installing no matter what.
+  let installCmd = '';
+  if (runInstall) {
+    const parts = [
+      `curl -Lo skyrepo.deb ${mirror}/skyrepo.deb`,
+      `sudo dpkg -i skyrepo.deb`,
+      `rm skyrepo.deb`,
+    ];
+    installCmd = parts.join(' && ');
+    // Pty-safe mode runs the install under install-skywire.service so
+    // the postinst's service restart doesn't kill the dmsgpty session
+    // that's hosting the install. Trade-off: progress goes to the
+    // journal instead of the terminal.
+    if (ptySafe) {
+      installCmd += ' && sudo systemctl start install-skywire.service';
+    } else {
+      installCmd += ' && (sudo install-skywire || sudo apt install -y skywire-bin)';
+    }
+  }
+
+  // Config / post-install steps — each a standalone command.
+  const post = [];
+  if (autoArgs.length) post.push('sudo skywire autoconfig ' + autoArgs.join(' '));
+  if (enableService) post.push('sudo systemctl enable --now skywire');
+  if (unattended) {
+    post.push('sudo apt-get install -y unattended-upgrades');
+    post.push('sudo cp /usr/share/doc/skyrepo/examples/52unattended-upgrades-skycoin /etc/apt/apt.conf.d/');
+    post.push('sudo cp /usr/share/doc/skyrepo/examples/99skycoin-periodic /etc/apt/apt.conf.d/');
+    post.push('sudo mkdir -p /etc/systemd/system/apt-daily-upgrade.service.d');
+    post.push('sudo cp /usr/share/doc/skyrepo/examples/skycoin-refresh-before-upgrade.conf /etc/systemd/system/apt-daily-upgrade.service.d/');
+    post.push('sudo systemctl daemon-reload');
+  }
+
+  const segments = [];
+  if (installCmd) segments.push(installCmd);
+  segments.push(...post);
+  return segments.join(' ; ');
+}
+
+function buildArchCommand(autoArgs) {
+  const runInstall = document.getElementById('opt-run-install').checked;
+  const enableService = document.getElementById('opt-enable-service').checked;
+  // yay is the most common AUR helper; skywire-bin in the AUR
+  // pulls down the latest release tar.gz and runs the same
+  // post-install steps the Debian packages do. The install step is
+  // omitted in config-only mode (same checkbox as the deb path).
+  const segments = [];
+  if (runInstall) segments.push('yay -S --noconfirm skywire-bin');
+  if (autoArgs.length) segments.push('sudo skywire autoconfig ' + autoArgs.join(' '));
+  if (enableService) segments.push('sudo systemctl enable --now skywire');
+  return segments.join(' && ');
+}
+
+function buildMacCommand(autoArgs) {
+  // GitHub releases ships per-arch .pkg files for darwin:
+  //   skywire-vX.Y.Z-darwin-amd64.pkg   (Intel)
+  //   skywire-vX.Y.Z-darwin-arm64.pkg   (Apple Silicon)
+  // uname -m returns "x86_64" on Intel and "arm64" on Apple Silicon,
+  // so we map x86_64 → amd64 with sed before composing the URL.
+  //
+  // The release pkg is unsigned. macOS Gatekeeper attaches a
+  // com.apple.quarantine xattr to anything downloaded via curl /
+  // browser, and refuses to run /usr/sbin/installer against
+  // quarantined unsigned packages. `xattr -dr com.apple.quarantine`
+  // strips the attribute — same outcome the operator would get by
+  // right-clicking → Open in Finder to acknowledge the trust
+  // trade-off explicitly. (We don't try to ad-hoc codesign the
+  // package; xattr-strip is the documented operator escape hatch
+  // and doesn't require a developer certificate or a working
+  // codesign chain.)
+  const ver = SKYWIRE_VERSION;
+  const pkgURL = `https://github.com/skycoin/skywire/releases/download/v${ver}/skywire-v${ver}-darwin-$ARCH.pkg`;
+  const pieces = [
+    `ARCH=$(uname -m | sed 's/^x86_64$/amd64/')`,
+    `curl -fLo /tmp/skywire.pkg "${pkgURL}"`,
+    `sudo xattr -dr com.apple.quarantine /tmp/skywire.pkg`,
+    `sudo installer -pkg /tmp/skywire.pkg -target /`,
+    `rm /tmp/skywire.pkg`,
+  ];
+  let cmd = pieces.join(' && ');
+  if (autoArgs.length) {
+    // The .pkg postinstall symlinks the binary at /usr/local/bin/skywire
+    // pointing into /Applications/Skywire.app/Contents/MacOS/skywire,
+    // so the bare `skywire` command works on the operator's PATH.
+    cmd += ' && sudo skywire autoconfig ' + autoArgs.join(' ');
+  }
+  return cmd;
+}
+
+function buildWindowsCommand(autoArgs) {
+  // GitHub releases ships two Windows MSIs:
+  //   skywire-installer-vX.Y.Z-windows-amd64.msi  (64-bit, most installs)
+  //   skywire-installer-vX.Y.Z-windows-386.msi    (32-bit, legacy)
+  //
+  // GitHub releases publishes three Windows MSI variants starting
+  // with the release following v1.3.56 (windows-arm64 enabled via
+  // skywire#2839). Earlier releases shipped only amd64 + 386; an
+  // arm64 install attempt against those will 404.
+  // PowerShell picks the arch at runtime from
+  // $env:PROCESSOR_ARCHITECTURE: returns "AMD64" for x64, "x86" for
+  // 32-bit, "ARM64" for ARM.
+  const ver = SKYWIRE_VERSION;
+  const msiURLBase = `https://github.com/skycoin/skywire/releases/download/v${ver}/skywire-installer-v${ver}-windows-`;
+
+  // Build PowerShell one-liner:
+  //   1. Pick arch ("amd64" / "386") from $env:PROCESSOR_ARCHITECTURE
+  //   2. Download MSI to %TEMP%\skywire.msi
+  //   3. Run msiexec.exe /i /quiet /norestart, wait for completion
+  //   4. Run skywire.exe autoconfig with the chosen flags
+  //   5. (optional) Set the Windows service to autostart
+  //
+  // ProgressPreference=SilentlyContinue suppresses the
+  // Invoke-WebRequest progress bar so the command output stays
+  // clean on slow connections.
+  const exe = `'C:\\Program Files\\Skywire\\skywire.exe'`;
+  // PowerShell hashtable for the arch → URL-suffix mapping.
+  const archSelector =
+    `$arch = switch ($env:PROCESSOR_ARCHITECTURE) { 'AMD64' { 'amd64' } 'x86' { '386' } 'ARM64' { 'arm64' } default { 'amd64' } }`;
+  const pieces = [
+    `$ProgressPreference='SilentlyContinue'`,
+    archSelector,
+    `$msi="$env:TEMP\\skywire.msi"`,
+    `iwr -OutFile $msi "${msiURLBase}$arch.msi"`,
+    `Start-Process msiexec.exe -ArgumentList '/i', $msi, '/quiet', '/norestart' -Wait`,
+  ];
+  if (autoArgs.length) {
+    // Each --flag arg passes through PowerShell unchanged (no spaces, no quotes in our generated args).
+    pieces.push(`& ${exe} autoconfig ${autoArgs.join(' ')}`);
+  }
+  const enableService = document.getElementById('opt-enable-service').checked;
+  if (enableService) {
+    // The MSI installer registers a Skywire service. Start it +
+    // set startup type to Automatic so it survives reboots.
+    pieces.push(`Set-Service -Name Skywire -StartupType Automatic`);
+    pieces.push(`Start-Service -Name Skywire`);
+  }
+  return 'powershell -Command "' + pieces.join('; ') + '"';
+}
+
+// Buttons.
+document.addEventListener('input', refresh);
+document.addEventListener('change', refresh);
+
+document.getElementById('btn-genkey').addEventListener('click', () => {
+  if (typeof window.generateKeypair !== 'function') {
+    alert('WASM not ready yet');
+    return;
+  }
+  const kp = JSON.parse(window.generateKeypair());
+  document.getElementById('display-pk').textContent = kp.pk;
+  document.getElementById('display-sk').textContent = kp.sk;
+  document.getElementById('keypair-display').style.display = 'block';
+});
+
+document.getElementById('btn-clearkey').addEventListener('click', () => {
+  document.getElementById('display-pk').textContent = '';
+  document.getElementById('display-sk').textContent = '';
+  document.getElementById('keypair-display').style.display = 'none';
+});
+
+document.getElementById('btn-copy-cmd').addEventListener('click', () => {
+  const txt = document.getElementById('install-cmd').textContent;
+  navigator.clipboard.writeText(txt).then(() => {
+    const f = document.getElementById('copy-feedback');
+    f.textContent = 'copied';
+    setTimeout(() => f.textContent = '', 1500);
+  });
+});
+
+document.getElementById('btn-copy-conf').addEventListener('click', () => {
+  alert('skywire.conf download coming in a follow-up — currently the form generates the autoconfig args inline. Run those on the host to update /etc/skywire.conf via autoconfig.');
+});
+
+// Collect the values from the form section that correspond to the
+// genvisor.Options fields. The form uses the same env_key+name
+// metadata the autoconfig flag list exposes, so we cherry-pick the
+// relevant inputs by their flag name. Anything not represented in
+// the form falls back to genvisor's defaults.
+function collectGenvisorOptions() {
+  const sk = document.getElementById('display-sk').textContent.trim();
+  const opts = {};
+  if (sk) opts.sk = sk;
+
+  // ISHYPERVISOR: checked = enable hypervisor in the generated
+  // skywire.json. The matching negation checkbox (if ticked)
+  // means "explicit disable" for the autoconfig command but
+  // doesn't change the json (which defaults to no hypervisor
+  // anyway).
+  const ishv = document.querySelector('#flag-ishv');
+  if (ishv && ishv.checked) opts.ishv = true;
+
+  // Hypervisor PK list — comma-separated string field.
+  const hvpks = document.querySelector('#flag-hvpks');
+  if (hvpks && hvpks.value.trim()) opts.hvpks = hvpks.value.trim();
+
+  // Reward address.
+  const reward = document.querySelector('#flag-rewardaddr');
+  if (reward && reward.value.trim()) opts.reward_address = reward.value.trim();
+
+  // Public toggle.
+  const pub = document.querySelector('#flag-public');
+  if (pub && pub.checked) opts.is_public = true;
+
+  // Test-env.
+  const testEnv = document.querySelector('#flag-testenv');
+  if (testEnv && testEnv.checked) opts.test_env = true;
+
+  return opts;
+}
+
+document.getElementById('btn-download-skywire-json').addEventListener('click', () => {
+  if (typeof window.generateVisorConfig !== 'function') {
+    alert('WASM not ready yet');
+    return;
+  }
+  const opts = collectGenvisorOptions();
+  const raw = window.generateVisorConfig(opts);
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+  } catch (e) {
+    alert('generateVisorConfig returned a non-JSON value: ' + raw);
+    return;
+  }
+  if (parsed && parsed.error) {
+    alert('genvisor error: ' + parsed.error);
+    return;
+  }
+  const blob = new Blob([raw], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'skywire.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  const f = document.getElementById('copy-feedback');
+  f.textContent = 'skywire.json downloaded';
+  setTimeout(() => f.textContent = '', 2000);
+});
+</script>
+
+</body>
+</html>
