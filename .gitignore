@@ -9,5 +9,4 @@
 pkg/
 
 # Transient TinyGo root overlay built by `make wasm` (symlink tree + net/http patch).
-/.tinygoroot
 .claude/

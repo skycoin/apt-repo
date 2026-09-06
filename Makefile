@@ -28,22 +28,14 @@ PORT       ?= 8088
 
 all: wasm pages
 
-# Stock TinyGo (through 0.41.x) ships a broken net/http for the js/wasm target:
-# roundtrip_js.go calls t.roundTrip(req), a method TinyGo never defines, so any
-# wasm build that transitively imports net/http fails ("t.roundTrip undefined").
-# ./cmd/wasm pulls net/http in via skywire's dmsg-discovery types (it never makes
-# a request). We build against a SYMLINK overlay of $(TINYGOROOT) — fast, copies
-# no data — with patches/roundtrip_fix_js.go dropped into net/http to supply the
-# missing method. The overlay ($(TINYGO_OVERLAY)) is regenerated each build from
-# the live toolchain, so it self-heals across TinyGo upgrades; delete the patch
-# once TinyGo fixes this upstream.
-TINYGO_OVERLAY := .tinygoroot
+# Requires TinyGo >= 0.42.0. Earlier releases shipped a broken js/wasm
+# net/http (roundtrip_js.go called an undefined t.roundTrip), which this
+# target used to work around with a symlink overlay of $(TINYGOROOT) plus a
+# patched roundtrip file (.tinygoroot + patches/roundtrip_fix_js.go). Fixed
+# upstream in TinyGo; the overlay machinery is retired.
 wasm:
 	@cp "$(TINYGOROOT)/targets/wasm_exec.js" wasm_exec.js
-	@rm -rf "$(TINYGO_OVERLAY)"
-	@cp -asRT "$(TINYGOROOT)" "$(TINYGO_OVERLAY)"
-	@cp patches/roundtrip_fix_js.go "$(TINYGO_OVERLAY)/src/net/http/roundtrip_fix_js.go"
-	TINYGOROOT="$(CURDIR)/$(TINYGO_OVERLAY)" tinygo build -target wasm -no-debug -o b.wasm ./cmd/wasm
+	tinygo build -target wasm -no-debug -o b.wasm ./cmd/wasm
 
 pages: wasm
 	@go build -o apt-repo .
