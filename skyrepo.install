@@ -1,0 +1,45 @@
+# pacman install scriptlet for the Arch skyrepo package.
+# Imports + locally-signs the Skycoin packaging key and appends the signed
+# [skywire] repo to /etc/pacman.conf. Idempotent; $arch is kept LITERAL so
+# pacman expands it per-machine. Mirrors skyrepo.deb's postinst (apt source + key).
+
+_KEYFP=48F19E5157BE6014D80A47328D6D51BC4AD7AE64
+_KEYFILE=/usr/share/skyrepo/skywire-pacman.gpg
+_MIRROR=https://deb.theskywirenetwork.net
+
+_skyrepo_configure() {
+	# Import the packaging key into pacman's own keyring and locally sign it so
+	# SigLevel = Required is satisfied without prompting. The key is SHIPPED in
+	# this package (/usr/share/skyrepo/skywire-pacman.gpg), so this never needs
+	# to fetch from a keyserver — the same reason skyrepo.deb ships the key to
+	# /etc/apt/trusted.gpg.d/.
+	pacman-key --init >/dev/null 2>&1 || true
+	if [ -f "$_KEYFILE" ]; then
+		pacman-key --add "$_KEYFILE" >/dev/null 2>&1 || true
+		pacman-key --lsign-key "$_KEYFP" >/dev/null 2>&1 || true
+	fi
+	# Add the [skywire] repo once. $arch stays literal (single-quoted) — pacman
+	# substitutes the machine's architecture at sync time.
+	if ! grep -q '^\[skywire\]' /etc/pacman.conf 2>/dev/null; then
+		printf '\n[skywire]\nSigLevel = Required\nServer = %s/archlinux/$arch\n' "$_MIRROR" >> /etc/pacman.conf
+	fi
+	cat <<'EOM'
+==> skyrepo: the signed [skywire] pacman repo is configured.
+    Sync and install:  pacman -Sy && pacman -S skywire-bin skywire-autoupdate
+EOM
+}
+
+post_install() {
+	_skyrepo_configure
+}
+
+post_upgrade() {
+	_skyrepo_configure
+}
+
+pre_remove() {
+	# Remove the [skywire] block we appended (header through its Server line).
+	if grep -q '^\[skywire\]' /etc/pacman.conf 2>/dev/null; then
+		sed -i '/^\[skywire\]/,/^Server *=.*\/archlinux\//d' /etc/pacman.conf 2>/dev/null || true
+	fi
+}
