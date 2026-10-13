@@ -22,7 +22,7 @@ curl -fsSL "$URL.sha256" | awk '{print $1"  tinygo.linux-amd64.tar.gz"}' | sha25
 [[ "$(gh release view toolchain --repo "$FORK" --json targetCommitish -q .targetCommitish)" == "$_sha" ]] || { echo "toolchain release moved during download, rerun"; exit 1; }
 _ver=$(gh api "repos/${FORK}/contents/goenv/version.go?ref=${_sha}" -q .content | base64 -d | sed -n 's/^const version = "\(.*\)"$/\1/p')
 _date=$(gh api "repos/${FORK}/commits/${_sha}" -q .commit.committer.date | cut -c1-10 | tr -d -)
-pkgver="${_ver}+git${_date}.${_sha:0:9}"
+pkgver="${_ver//-/\~}+git${_date}.${_sha:0:9}"
 echo "tinygo-skywire ${pkgver}"
 
 for f in tinygo-skywire.PKGBUILD tinygo-skywire.deb.PKGBUILD; do
@@ -36,9 +36,10 @@ ls -l out
 
 gh release view "$REL" --repo skycoin/${_aptrepo} >/dev/null 2>&1 || gh release create "$REL" --repo skycoin/${_aptrepo} --title "tinygo-skywire" --notes "TinyGo from the ${FORK} develop branch, packaged for Arch (x86_64) and Debian (amd64). Built by updtinygoskywire.sh. Signed with the Skycoin key."
 gh release upload "$REL" --repo skycoin/${_aptrepo} --clobber out/*
-# Keep only the packages just uploaded.
+# Keep only the packages just uploaded. GitHub stores '~' in a name as '.'.
+keep=" $(cd out && for f in *; do printf '%s ' "${f//\~/.}"; done)"
 for a in $(gh release view "$REL" --repo skycoin/${_aptrepo} --json assets -q '.assets[].name'); do
-	[[ -f "out/$a" ]] || gh release delete-asset "$REL" "$a" --repo skycoin/${_aptrepo} -y
+	[[ "$keep" == *" $a "* ]] || gh release delete-asset "$REL" "$a" --repo skycoin/${_aptrepo} -y
 done
 gh release edit "$REL" --repo skycoin/${_aptrepo} --notes "TinyGo ${pkgver} from ${FORK} commit ${_sha}, packaged for Arch (x86_64) and Debian (amd64). Built by updtinygoskywire.sh. Signed with the Skycoin key."
 rm -rf "$WORK"
