@@ -1,0 +1,5 @@
+Component: main
+Origin: skycoin
+Label: skycoin
+Architecture: i386
+Description: skycoin debian package repository
