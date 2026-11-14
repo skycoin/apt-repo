@@ -17,18 +17,18 @@ MD5sum: 18c69e7e6a676b8165e65da0e9be350d
 Description: Skycoin apt repo configuration, signing key, install-skywire service + skybian-style autoconfig payload - debian package
 
 Package: skywire-autoupdate
-Version: 1.3.101-4
+Version: 1.3.110-1
 Architecture: all
 Depends: skywire-bin, golang, curl, zstd
 Maintainer: Skycoin
 Priority: optional
 Section: web
-Filename: pool/main/s/skywire-autoupdate/skywire-autoupdate_1.3.101-4_all.deb
-Size: 10212
-SHA512: 0490b0e2728ced8305b117d38a6e59a52c1e130bae72bd715b6679f326fb8c70dbc0f45dc5a31827352d1a4825e42a53374578dbbb3fa7c926e7a254b81debe4
-SHA256: 9aa42385b29e9ded7d6b69320b98955959809c4251ea67f14dcc85aad31000c1
-SHA1: e86ef55ad4a33c2ea00f16090e7fdb325ffe28a3
-MD5sum: c73c4a2916eee0704dc2a2d72ef5ccd6
+Filename: pool/main/s/skywire-autoupdate/skywire-autoupdate_1.3.110-1_all.deb
+Size: 10056
+SHA512: fa563450a019dd0dae5a6f229b213c5b07defa44cb9230bf562f751966ffc4b62ce85cf6f49f8f286b63d49a3fa2c08686d841dde622257cee51d6fad9b72aa2
+SHA256: 48b95a8ebd0fe23ec6195e0b51820c8541cbfdaaf51eb36c4ef6a5b74da136eb
+SHA1: 5231fc6b37eecd8d63ceac20025d82ccef974756
+MD5sum: 820b4a04b079ecf5ac1075471cc0be46
 Description: Skywire auto-updater: compiles latest CI-tested commit daily - debian package
 
 Package: skywire-bin
