@@ -1,0 +1,82 @@
+Package: skyrepo
+Version: 1.3.103-2
+Architecture: all
+Depends: 
+Replaces: skybian
+Conflicts: skybian
+Provides: skybian
+Maintainer: Skycoin
+Priority: optional
+Section: web
+Filename: pool/main/s/skyrepo/skyrepo_1.3.103-2_all.deb
+Size: 11140
+SHA512: c51d7dee962e75fe3a5861e0242feee2625f3c092a7da64d7db4a947e8aedfb6e4ab5d5d98e0ecab10c3f7cef19b2390153efd27558725910c8ea19fdb888dfb
+SHA256: 88e8cdd236750275aeaf213f0e8e9b3f55f93f8376a9636ab21e43da0a90f3ff
+SHA1: 7b4fa20f76578dfdb3de4334a8e7417f51e03f99
+MD5sum: 18c69e7e6a676b8165e65da0e9be350d
+Description: Skycoin apt repo configuration, signing key, install-skywire service + skybian-style autoconfig payload - debian package
+
+Package: skywire-autoupdate
+Version: 1.3.112-1
+Architecture: all
+Depends: skywire-bin, curl, zstd
+Suggests: golang
+Maintainer: Skycoin
+Priority: optional
+Section: web
+Filename: pool/main/s/skywire-autoupdate/skywire-autoupdate_1.3.112-1_all.deb
+Size: 10164
+SHA512: f85faf841f6e28e6ac92975185d128a8746e382ccdc3ac4f20db43f023fee9909c2ca5393b15dabd707502a07495dede4605b9a0f0ee21fcc829c5a0e9ce2319
+SHA256: b8f62bda26d2b41f5c9a6676bb9f324333b4a5cbda3283b0d7fbc9f95bcf6a2b
+SHA1: a5e78a943dda1827b42ce19f4679c1c1147dd323
+MD5sum: 086f3eb1443ecd31e09603f1b298ab25
+Description: Skywire auto-updater: installs the latest develop binary daily (or builds from source) - debian package
+
+Package: skywire-bin
+Version: 1.3.112-1
+Architecture: armhf
+Depends: 
+Provides: skywire
+Maintainer: skycoin
+Priority: optional
+Section: web
+Filename: pool/main/s/skywire-bin/skywire-bin_1.3.112-1_armhf.deb
+Size: 67167804
+SHA512: a41d06451128c4831d0eb75cfd5a5b68f1a9398b4c44b50bc62b3aa10a98b75d24aeb7a82a8103d1ae5fd441ca5c58dbc1b5c9a0e7e8f99fbd66cf8ead04a94c
+SHA256: 8382485c35e324b593352d39a1d0e9f0a244e7e310d63b40329d60c8072d6ecf
+SHA1: b2acd0638a01a907cae8d20c9c940fe131a79859
+MD5sum: cf08720b907a558266fd6986b5e3425a
+Description: Skywire: Decentralize the web. Skycoin.com. Debian package
+
+Package: skywire-docker-autopull
+Version: 1.3.101-4
+Architecture: all
+Depends: 
+Maintainer: Skycoin
+Priority: optional
+Section: web
+Filename: pool/main/s/skywire-docker-autopull/skywire-docker-autopull_1.3.101-4_all.deb
+Size: 2036
+SHA512: cfaca2a788fa4a97743848bebdd089cee9251f2c35c99b6a63a6b93a73495bc22baf9edf5e7ec694b5237ca797a1bef0e809d533253809376c662251359e4e66
+SHA256: 3257deac7b0d0412364eabfad96f5460b21012315883cce49e179fdfcdf47ea8
+SHA1: 0e881eb0ce7663306e464e36c6a1e891224e2743
+MD5sum: 9d29f354526339266556fad868da1e7b
+Description: Skywire Docker deployment auto-updater: pulls latest image and recreates containers - debian package
+
+Package: skywire-tinygo-bin
+Version: 1.3.112-1
+Architecture: armhf
+Depends: 
+Provides: skywire
+Conflicts: skywire-bin
+Maintainer: skycoin
+Priority: optional
+Section: web
+Filename: pool/main/s/skywire-tinygo-bin/skywire-tinygo-bin_1.3.112-1_armhf.deb
+Size: 55894096
+SHA512: 0470fad5259bffc9af0ba04c23a1f7dd6e55fa829169335a0ed799f88d2775c14a8cae473be3a30e2a300eddd47ac5f1d6be523c70a5d3326bea2d9beec15606
+SHA256: c92e40505386d6bf151b6bd94ee942a34fcbc5713c00dda624f1f61d245b717e
+SHA1: eb48de543c346add5f35b798fff573ab0362f945
+MD5sum: 4a7f6311507b2d51209cd9977a6b4204
+Description: Skywire built with TinyGo (experimental). Skycoin.com. Debian package
+
