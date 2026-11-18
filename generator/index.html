@@ -370,7 +370,11 @@
     </label>
     <label data-platforms="deb"><input type="checkbox" id="opt-unattended-upgrades">
       Enable unattended-upgrades for Skycoin packages
-      <span class="desc">installs <code>unattended-upgrades</code> and fully enables it for Skycoin packages: copies <code>52unattended-upgrades-skycoin</code> (allow the skycoin origin) <strong>and</strong> <code>99skycoin-periodic</code> (force apt's periodic mechanism ON) into <code>/etc/apt/apt.conf.d/</code>, unmasks and enables the <code>apt-daily</code> / <code>apt-daily-upgrade</code> systemd timers (Armbian <strong>masks</strong> them by default, which <code>APT::Periodic::Enable</code> can't override — a masked timer never fires), plus a systemd drop-in that refreshes the package lists right before each unattended-upgrade so a new release is installed the <strong>same day</strong> instead of lagging a cycle</span>
+      <span class="desc">installs <code>unattended-upgrades</code> and fully enables it for Skycoin packages: copies <code>52unattended-upgrades-skycoin</code> (allow the skycoin origin) <strong>and</strong> <code>99skycoin-periodic</code> (force apt's periodic mechanism ON) into <code>/etc/apt/apt.conf.d/</code>, unmasks and enables the <code>apt-daily</code> / <code>apt-daily-upgrade</code> systemd timers (Armbian <strong>masks</strong> them by default, which <code>APT::Periodic::Enable</code> can't override — a masked timer never fires), plus a systemd drop-in that refreshes the package lists right before each unattended-upgrade so a new release is installed the <strong>same day</strong> instead of lagging a cycle. Also turned on by either auto-update box below, because packaging changes only arrive through apt.</span>
+    </label>
+    <label data-platforms="deb"><input type="checkbox" id="opt-unattended-os">
+      └ keep the whole OS updated, not only Skycoin packages
+      <span class="desc">the distro default only allows security updates. This writes <code>53unattended-upgrades-all-origins</code> with <code>Origins-Pattern { "origin=*"; }</code> so every configured apt repository is upgraded automatically. Implies the box above.</span>
     </label>
     <label data-platforms="deb"><input type="checkbox" id="opt-pty-safe-install">
       Pty-safe install (installing over <code>skywire cli dmsg pty exec</code>)
@@ -378,7 +382,7 @@
     </label>
     <label><input type="checkbox" id="opt-autoupdate">
       Also enable auto-updates (<code>skywire-autoupdate</code>)
-      <span class="desc">an <strong>update mechanism, not a way to install skywire</strong> — it applies on top of the install above. Adds the <code>skywire-autoupdate</code> package: a daily <code>skywire-update.timer</code> that keeps this visor current and restarts it on a new version. The updater <strong>downloads the prebuilt <code>develop-latest</code> release binary</strong> (checksum-verified, rebuilt by CI on every push to <code>develop</code>), so it needs no Go toolchain and leaves no Go caches. The generated command writes <code>UPDATE_CHANNEL=binary</code> to <code>/etc/skywire.conf</code>.</span>
+      <span class="desc">an <strong>update mechanism, not a way to install skywire</strong> — it applies on top of the install above. Adds the <code>skywire-autoupdate</code> package: a daily <code>skywire-update.timer</code> that keeps this visor current and restarts it on a new version. The updater <strong>downloads the prebuilt <code>develop-latest</code> release binary</strong> (checksum-verified, rebuilt by CI on every push to <code>develop</code>), so it needs no Go toolchain and leaves no Go caches. The generated command writes <code>UPDATE_CHANNEL=binary</code> to <code>/etc/skywire.conf</code>. On Debian and Ubuntu it also enables unattended-upgrades for Skycoin packages, since a packaging change never reaches the visor through the binary updater.</span>
     </label>
     <label><input type="checkbox" id="opt-autoupdate-source">
       └ build updates from source instead (needs Go)
@@ -2220,10 +2224,14 @@ function buildDebCommand(autoArgs) {
   const mirror = document.getElementById('mirror').value;
   const runInstall = document.getElementById('opt-run-install').checked;
   const enableService = document.getElementById('opt-enable-service').checked;
-  const unattended = document.getElementById('opt-unattended-upgrades').checked;
   const ptySafe = document.getElementById('opt-pty-safe-install').checked;
   const autoUpdate = document.getElementById('opt-autoupdate').checked;
   const autoUpdateSource = document.getElementById('opt-autoupdate-source').checked;
+  const unattendedOS = document.getElementById('opt-unattended-os').checked;
+  
+  
+  const unattended = document.getElementById('opt-unattended-upgrades').checked
+    || unattendedOS || autoUpdate || autoUpdateSource;
 
   
   
@@ -2256,6 +2264,9 @@ function buildDebCommand(autoArgs) {
     post.push('sudo apt-get install -y unattended-upgrades');
     post.push('sudo cp /usr/share/doc/skyrepo/examples/52unattended-upgrades-skycoin /etc/apt/apt.conf.d/');
     post.push('sudo cp /usr/share/doc/skyrepo/examples/99skycoin-periodic /etc/apt/apt.conf.d/');
+    if (unattendedOS) {
+      post.push(`echo 'Unattended-Upgrade::Origins-Pattern { "origin=*"; };' | sudo tee /etc/apt/apt.conf.d/53unattended-upgrades-all-origins >/dev/null`);
+    }
     post.push('sudo mkdir -p /etc/systemd/system/apt-daily-upgrade.service.d');
     post.push('sudo cp /usr/share/doc/skyrepo/examples/skycoin-refresh-before-upgrade.conf /etc/systemd/system/apt-daily-upgrade.service.d/');
     post.push('sudo systemctl daemon-reload');
